@@ -8,4 +8,4 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 HOUDINI_PATH := $(dir $(LOCAL_PATH))proprietary/houdini
 PRODUCT_COPY_FILES += \
-    $(call find-copy-subdir-files,*,$(HOUDINI_PATH),$(TARGET_COPY_OUT_SYSTEM))
+    $(call find-copy-subdir-files,*,$(dir $(LOCAL_PATH))proprietary/houdini,$(TARGET_COPY_OUT_SYSTEM))
