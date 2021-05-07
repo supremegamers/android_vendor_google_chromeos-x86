@@ -18,8 +18,13 @@ but ChromeOS skipped Android 8 (Oreo) entirely.
 
 ## Usage
 In general, the scripts can be used in any Linux distribution.
-Run `./extract-files.sh` to download the ChromeOS recovery image
+Run `./extract-files.sh --options` to download the ChromeOS recovery image
 and extract it to a folder called `proprietary`.
+
+Initial options are:
+-h | --help - Display help dialog
+-d | --debug - Leave drives mounted after extracting (for testing and bringups)
+-v | --version - Display version
 
 **Note:** The script requires `sudo` to mount the partitions from the
 ChromeOS recovery image.

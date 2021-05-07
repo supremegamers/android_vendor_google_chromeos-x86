@@ -1,5 +1,59 @@
 #!/usr/bin/env bash
 set -euo pipefail
+debug="n"
+
+while test $# -gt 0
+do
+  case $1 in
+
+  # Normal option processing
+    -h | --help)
+      echo "Usage: $0 options "
+      echo "options: -h | --help: displays this dialog"
+      echo "		 -d | --debug: Drives will stay mounted for debugging purposes"
+      echo "		 -v | --version: Displays version info"
+      echo ""
+      ;;
+    -d | --debug)
+      debug="y";
+      echo "Debug Mode: Drives will stay mounted"
+      ;;
+    -v | --version)
+      echo "Version: vendor_google_chromeos-x86 2.0"
+      echo "Updated: 05.07.2021"
+      ;;
+	
+  # ...
+
+  # Special cases
+    --)
+      break
+      ;;
+    --*)
+      # error unknown (long) option $1
+      ;;
+    -?)
+      # error unknown (short) option $1
+      ;;
+
+  # FUN STUFF HERE:
+  # Split apart combined short options
+    -*)
+      split=$1
+      shift
+      set -- $(echo "$split" | cut -c 2- | sed 's/./-& /g') "$@"
+      continue
+      ;;
+
+  # Done with options
+    *)
+      break
+      ;;
+  esac
+
+  # for testing purposes:
+  shift
+done
 
 # Use consistent umask for reproducible builds
 umask 022
@@ -36,13 +90,18 @@ fi
 temp_dir=$(mktemp -d)
 cd "$temp_dir"
 
-function cleanup {
-    set +e
-    cd "$temp_dir"
-    mountpoint -q vendor && sudo umount vendor
-    mountpoint -q chromeos && sudo umount chromeos
-    [[ -n "${loop_dev:-}" ]] && sudo losetup -d "$loop_dev"
-    rm -r "$temp_dir"
+function cleanup() {
+	if [ "$debug" != "n" ]; then
+		set +e
+		cd "$temp_dir"
+		mountpoint -q vendor && sudo umount vendor
+		mountpoint -q chromeos && sudo umount chromeos
+		[[ -n "${loop_dev:-}" ]] && sudo losetup -d "$loop_dev"
+		rm -r "$temp_dir"
+	else
+		echo "Temp folder: $temp_dir"
+	fi 
+    
 }
 trap cleanup EXIT
 
