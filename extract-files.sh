@@ -19,8 +19,8 @@ do
       echo "Debug Mode: Drives will stay mounted"
       ;;
     -v | --version)
-      echo "Version: vendor_google_chromeos-x86 2.0"
-      echo "Updated: 05.07.2021"
+      echo "Version: vendor_google_chromeos-x86 2.1"
+      echo "Updated: 05.27.2021"
       ;;
 	
   # ...
@@ -56,14 +56,22 @@ do
 done
 
 # Use consistent umask for reproducible builds
+
 umask 022
 
-CHROMEOS_VERSION="13816.64.0_drallion"
-CHROMEOS_RECOVERY="chromeos_${CHROMEOS_VERSION}_recovery_stable-channel_mp-v2"
+# Instructions for updating:
+# Start by grabbing the latest recovery available
+# Example: https://dl.google.com/dl/edgedl/chromeos/recovery/chromeos_13816.82.0_hatch_recovery_stable-channel_mp-v6.bin.zip
+# Then once downloaded, we run 'sha1sum chromeos_13816.82.0_hatch_recovery_stable-channel_mp-v6.bin.zip' 
+# and it will generate our SHA1 sum. Add just the hash from that to the CHROMEOS_SHA1 string
+# Then we split the name into the separate parts for CHROMEOS_VERSION & CHROMEOS_RECOVERY
+
+CHROMEOS_VERSION="13816.82.0_hatch"
+CHROMEOS_RECOVERY="chromeos_${CHROMEOS_VERSION}_recovery_stable-channel_mp-v6"
 
 CHROMEOS_FILENAME="$CHROMEOS_RECOVERY.bin.zip"
 CHROMEOS_URL="https://dl.google.com/dl/edgedl/chromeos/recovery/$CHROMEOS_FILENAME"
-CHROMEOS_SHA1="a6728870336e4aaff6599319c7c540d8d4507c23 $CHROMEOS_FILENAME"
+CHROMEOS_SHA1="30497765b4fcb07e57fbe01049274fc0597a044d $CHROMEOS_FILENAME"
 
 CHROMEOS_FILE="$PWD/$CHROMEOS_FILENAME"
 TARGET_DIR="$PWD/proprietary"
@@ -103,10 +111,13 @@ function cleanup() {
 	fi 
     
 }
+if [ "$debug" != "n" ]; then
 trap cleanup EXIT
+fi
 
 CHROMEOS_EXTRACTED="$CHROMEOS_RECOVERY.bin"
-CHROMEOS_ANDROID_VENDOR_IMAGE="chromeos/opt/google/containers/android/vendor.raw.img"
+CHROMEOS_ANDROID_VENDOR_IMAGE="chromeos/opt/google/vms/android/vendor.raw.img"
+
 
 echo " -> Extracting recovery image"
 unzip -q "$CHROMEOS_FILE" "$CHROMEOS_EXTRACTED"
@@ -117,9 +128,14 @@ loop_dev=$(sudo losetup -r -f --show --partscan "$CHROMEOS_EXTRACTED")
 
 mkdir chromeos
 sudo mount -r "${loop_dev}p3" chromeos
+if [ "$debug" != "n" ]; then
+read -p "Debug: finished mounting chromeos partition. Press any key to continue... " -n1 -s
+fi
 mkdir vendor
 sudo mount -r "$CHROMEOS_ANDROID_VENDOR_IMAGE" vendor
-
+if [ "$debug" != "n" ]; then
+read -p "Debug: finished mounting vendor partition. Press any key to continue... " -n1 -s
+fi
 echo " -> Deleting old files"
 rm -rf "$TARGET_DIR"
 mkdir "$TARGET_DIR"
@@ -130,9 +146,11 @@ RSYNC="rsync -rt --files-from=-"
 
 # Widevine DRM
 $RSYNC . "$TARGET_DIR/widevine" <<EOF
-vendor/bin/hw/android.hardware.drm@1.1-service.widevine
-vendor/etc/init/android.hardware.drm@1.1-service.widevine.rc
+vendor/bin/hw/android.hardware.drm@1.3-service.widevine
+vendor/etc/init/android.hardware.drm@1.3-service.widevine.rc
 vendor/lib/libwvhidl.so
+vendor/lib/mediadrm/libwvdrmengine.so
+vendor/lib64/mediadrm/libwvdrmengine.so
 EOF
 
 # Native bridge (Houdini)
@@ -169,8 +187,8 @@ EOF
 # The 32-bit version of Houdini cannot emulate aarch64 (afaik),
 # so there is little point in pretending to be an ARMv8 processor...
 # Continue using the ARMv7 version for now.
-mv "$TARGET_DIR/houdini/lib/arm/cpuinfo.pure32" "$TARGET_DIR/houdini/lib/arm/cpuinfo"
-touch -hr vendor/lib/arm "$TARGET_DIR/houdini/lib/arm"
+#~ mv "$TARGET_DIR/houdini/lib/arm/cpuinfo.pure32" "$TARGET_DIR/houdini/lib/arm/cpuinfo"
+#~ touch -hr vendor/lib/arm "$TARGET_DIR/houdini/lib/arm"
 
 # Normalize file modification times
 touch -hr "$CHROMEOS_ANDROID_VENDOR_IMAGE" "$TARGET_DIR"{/*,}
