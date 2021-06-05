@@ -148,9 +148,43 @@ RSYNC="rsync -rt --files-from=-"
 $RSYNC . "$TARGET_DIR/widevine" <<EOF
 vendor/bin/hw/android.hardware.drm@1.3-service.widevine
 vendor/etc/init/android.hardware.drm@1.3-service.widevine.rc
+vendor/etc/vintf/manifest/manifest_android.hardware.drm@1.3-service.widevine.xml
 vendor/lib/libwvhidl.so
 vendor/lib/mediadrm/libwvdrmengine.so
 vendor/lib64/mediadrm/libwvdrmengine.so
+EOF
+
+# Copy Android.bp for android.hardware.drm@1.3-service.widevine
+#~ cp $PWD/vendor/google/chromeos-x86/assets/widevine.Android.bp $TARGET_DIR/widevine/Android.bp
+
+cat > "$TARGET_DIR/widevine/Android.bp" <<EOF
+cc_prebuilt_binary {
+    name: "android.hardware.drm@1.3-service.widevine",
+    srcs: ["vendor/bin/hw/android.hardware.drm@1.3-service.widevine"],
+    vendor: true,
+    relative_install_path: "hw",
+    vintf_fragments: ["vendor/etc/vintf/manifest/manifest_android.hardware.drm@1.3-service.widevine.xml"],
+    init_rc: ["vendor/etc/init/android.hardware.drm@1.3-service.widevine.rc"],
+    required: [
+        "libwvhidl",
+        "libwvdrmengine",
+    ],
+    check_elf_files: false,
+}
+cc_prebuilt_library_shared {
+    name: "libwvhidl",
+    srcs: ["vendor/lib/libwvhidl.so"],
+    vendor: true,
+    check_elf_files: false,
+}
+cc_prebuilt_library_shared {
+    name: "libwvdrmengine",
+    srcs: ["vendor/lib/mediadrm/libwvdrmengine.so"],
+    vendor: true,
+    relative_install_path: "mediadrm",
+    check_elf_files: false,
+}
+
 EOF
 
 # Native bridge (Houdini)
