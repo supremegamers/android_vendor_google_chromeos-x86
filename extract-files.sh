@@ -66,12 +66,12 @@ umask 022
 # and it will generate our SHA1 sum. Add just the hash from that to the CHROMEOS_SHA1 string
 # Then we split the name into the separate parts for CHROMEOS_VERSION & CHROMEOS_RECOVERY
 
-CHROMEOS_VERSION="13816.82.0_hatch"
+CHROMEOS_VERSION="13982.88.0_hatch"
 CHROMEOS_RECOVERY="chromeos_${CHROMEOS_VERSION}_recovery_stable-channel_mp-v6"
 
 CHROMEOS_FILENAME="$CHROMEOS_RECOVERY.bin.zip"
 CHROMEOS_URL="https://dl.google.com/dl/edgedl/chromeos/recovery/$CHROMEOS_FILENAME"
-CHROMEOS_SHA1="30497765b4fcb07e57fbe01049274fc0597a044d $CHROMEOS_FILENAME"
+CHROMEOS_SHA1="c5d4f2176bca4b53474a958111231c12042ce942 $CHROMEOS_FILENAME"
 
 CHROMEOS_FILE="$PWD/$CHROMEOS_FILENAME"
 TARGET_DIR="$PWD/proprietary"
