@@ -146,8 +146,8 @@ RSYNC="rsync -rt --files-from=-"
 
 # Widevine DRM
 $RSYNC . "$TARGET_DIR/widevine" <<EOF
-vendor/bin/hw/android.hardware.drm@1.3-service.widevine
-vendor/etc/init/android.hardware.drm@1.3-service.widevine.rc
+vendor/bin/hw/android.hardware.drm@1.3-service-lazy.widevine
+vendor/etc/init/android.hardware.drm@1.3-service-lazy.widevine.rc
 vendor/etc/vintf/manifest/manifest_android.hardware.drm@1.3-service.widevine.xml
 vendor/lib/libwvhidl.so
 vendor/lib/mediadrm/libwvdrmengine.so
@@ -159,12 +159,12 @@ EOF
 
 cat > "$TARGET_DIR/widevine/Android.bp" <<EOF
 cc_prebuilt_binary {
-    name: "android.hardware.drm@1.3-service.widevine",
-    srcs: ["vendor/bin/hw/android.hardware.drm@1.3-service.widevine"],
+    name: "android.hardware.drm@1.3-service-lazy.widevine",
+    srcs: ["vendor/bin/hw/android.hardware.drm@1.3-service-lazy.widevine"],
     vendor: true,
     relative_install_path: "hw",
     vintf_fragments: ["vendor/etc/vintf/manifest/manifest_android.hardware.drm@1.3-service.widevine.xml"],
-    init_rc: ["vendor/etc/init/android.hardware.drm@1.3-service.widevine.rc"],
+    init_rc: ["vendor/etc/init/android.hardware.drm@1.3-service-lazy.widevine.rc"],
     required: [
         "libwvhidl",
         "libwvdrmengine",
