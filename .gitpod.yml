@@ -1,8 +1,10 @@
+image:
+  file: .gitpod.Dockerfile
 tasks:
   - name: Install bashbox
-    before: curl --proto '=https' --tlsv1.2 -sSfL "https://git.io/Jc9bH" | bash -s selfinstall
+    before: curl --proto '=https' --tlsv1.2 -sSfL "https://git.io/Jc9bH" | bash -s selfinstall && exit
   - name: Compile bashbox project
-    init: bashbox build --release
+    init: bashbox run --release
 vscode:
   extensions:
     - timonwong.shellcheck
