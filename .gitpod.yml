@@ -3,7 +3,7 @@ image:
 tasks:
   - name: Install bashbox
     before: curl --proto '=https' --tlsv1.2 -sSfL "https://git.io/Jc9bH" | bash -s selfinstall && exit
-  - name: Compile bashbox project
+  - name: Run bashbox project
     init: bashbox run --release
 vscode:
   extensions:

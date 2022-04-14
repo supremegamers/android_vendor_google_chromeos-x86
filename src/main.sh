@@ -1,22 +1,17 @@
 use std::print::log;
 
-function cleanup() {
-	log::warn "Performing cleanup";
-	for _dir in "$_tmpdir" "$_cros_extracted_dir"; do rm -rf "$_dir" && mkdir -m0755 "$_dir"; done
-}
 
 function main() {
-	trap cleanup EXIT SIGINT SIGTERM;
 	local sevenz='7z x -bso0 -bsp0';
 	local _workdir && _workdir="$(readlink -f "$PWD")";
 	local -r _version="14526.57.0_nocturne"
 	local -r _url="https://dl.google.com/dl/edgedl/chromeos/recovery/chromeos_${_version}_recovery_stable-channel_mp.bin.zip";
 	local -r _downloaded_file="$_workdir/${_url##*/}";
 	local -r _shasum=6745c05f28e5d9ca574c385d7057327debbe7225;
-	local -r _tmpdir="$_workdir/.cros_tmp";
-	local -r _cros_extracted_dir="$_workdir/cros_extracted";
 	local -r _vendor_img_path="opt/google/containers/android/vendor.raw.img";
 	local -r _root_partition_img_name="ROOT-A.img";
+	local -r _tmpdir="$_workdir/.cros_tmp";
+	local -r _cros_extracted_dir="$_workdir/cros_extracted";
 	local _houdini_files=(
 		bin/houdini
 		bin/houdini64
@@ -43,7 +38,8 @@ function main() {
 		curl -L "$_url" -o "$_downloaded_file";
 	} fi
 
-	cleanup
+	for _dir in "$_tmpdir" "$_cros_extracted_dir"; do rm -rf "$_dir" && mkdir -m0755 "$_dir"; done
+	trap 'log::warn "Performing cleanup"; rm -rf "$_tmpdir"' EXIT SIGINT SIGTERM;
 	pushd "$_tmpdir" 1>/dev/null && log::info "Extracting houdini and widevine from vendor.img";
 	$sevenz "$_downloaded_file" && $sevenz *.bin "$_root_partition_img_name";
 	$sevenz "$_root_partition_img_name" "$_vendor_img_path";
@@ -85,5 +81,7 @@ on property:ro.enable.native.bridge.exec64=1
     copy /system/etc/binfmt_misc/arm64_exe /proc/sys/fs/binfmt_misc/register
     copy /system/etc/binfmt_misc/arm64_dyn /proc/sys/fs/binfmt_misc/register
 ' > "$_cros_extracted_dir/etc/init/houdini.rc";
+
+	log::info "Check $_cros_extracted_dir for output";
 
 }
