@@ -40,7 +40,7 @@ function main() {
 
 	for _dir in "$_tmpdir" "$_cros_extracted_dir"; do rm -rf "$_dir" && mkdir -m0755 "$_dir"; done
 	trap "log::warn \"Performing cleanup\"; rm -rf \"$_tmpdir\"" EXIT SIGINT SIGTERM;
-	pushd "$_tmpdir" 1>/dev/null && log::info "Extracting houdini and widevine from vendor.img";
+	pushd "$_tmpdir" 1>/dev/null && log::info "Extracting vendor.img from ${_downloaded_file##*/}";
 	$sevenz "$_downloaded_file" && $sevenz *.bin "$_root_partition_img_name";
 	$sevenz "$_root_partition_img_name" "$_vendor_img_path";
 	unsquashfs -user-xattrs "$_vendor_img_path" >/dev/null 2>&1 && pushd squashfs-root 1>/dev/null;
